@@ -46,6 +46,7 @@ class DataPreprocessor(object):
         self.log_removed_vocab_size = None
         self.image_size = image_size
         self.elapsed_time = None
+        self.IMG_FEATS = 4096
 
     def load(self, filename):
         file_path = os.path.join(self.DATA_FOLDER, self.MSCOCO_FOLDER, self.CLEANED, filename)
@@ -146,7 +147,7 @@ class DataPreprocessor(object):
 
     def save_feats_as_hd5(self):
         print("Saving extracted features into hd5 file")
-        data_file = h5py.File(self.save_path + self.feat_extractor + 'image_to_features.h5')
+        data_file = h5py.File(self.save_path + self.feat_extractor + '_image_to_features.h5')
         number_of_images = len(self.image_files)
 
         for arg, image_path in enumerate(self.image_files):
@@ -172,6 +173,27 @@ class DataPreprocessor(object):
         pickle.dump(self.wordtoix, open(self.save_path + 'word_to_ix.p', 'wb'))
         pickle.dump(self.ixtoword, open(self.save_path + 'ix_to_word.p', 'wb'))
 
+
+    def data_parameters(self):
+        log_file = open(self.save_path + 'data_parameters.log','w')
+        log_file.write('csv_filename: {0}\n'.format(self.filename))
+        log_file.write('save_path: {0}\n'.format(self.save_path))
+        log_file.write('BOS: {0}\n'.format(self.BOS))
+        log_file.write('EOS: {0}\n'.format(self.EOS))
+        log_file.write('PAD: {0}\n'.format(self.PAD))
+        log_file.write('IMG_FEATS: {0}\n'.format(self.IMG_FEATS))
+        log_file.write('word_freq_limit: {0}\n'.format(self.word_freq_limit))
+        log_file.write('max_caption_length: {0}\n'.format(self.max_cap_len))
+        log_file.write('initial_data_size: {0}\n'.format(self.log_old_file_size))
+        log_file.write('current_data_size: {0}\n'.format(self.log_file_size))
+        log_file.write('removed_data_size: {0}\n'.format(self.log_difference))
+        log_file.write('vocab_initial_size: {0}\n'.format(self.log_initial_vocab_size))
+        log_file.write('vocab_current_size: {0}\n'.format(self.log_current_vocab_size))
+        log_file.write('vocab_removed_size: {0}\n'.format(self.log_removed_vocab_size))
+        log_file.write('cnn_extractor: {0}\n'.format(self.feat_extractor))
+        log_file.write('elasped_time: {0}\n'.format(self.elapsed_time))
+        log_file.close()
+
     def preprocess(self, filename):
         start_time = time.monotonic()
         self.load(filename=filename)
@@ -187,3 +209,4 @@ class DataPreprocessor(object):
         self.write_dictionaries()
         self.elapsed_time = time.monotonic() - start_time
         print("Elasped Time is ", self.elapsed_time)
+        self.data_parameters()
