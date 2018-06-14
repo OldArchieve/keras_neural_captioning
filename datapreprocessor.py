@@ -92,8 +92,11 @@ class DataPreprocessor(object):
     # captions = ["hello", "word", "hello"]
     # returns--> [('hello', 2), ('word', 1)]
     def get_word_frequencies(self):
-        self.word_frequencies = Counter(chain(*self.captions)).most_common()
+        #print(self.captions)
+        wordList = [sentence.split(' ') for sentence in self.captions]
+        self.word_frequencies = Counter(chain(*wordList)).most_common()
         self.word_frequencies = np.asarray(self.word_frequencies)
+        #print(self.word_frequencies[20:40])
 
     def construct_dictionaries(self):
         words = self.word_frequencies[:, 0]
@@ -106,8 +109,8 @@ class DataPreprocessor(object):
             print("Removing words which are less than the word limit", self.word_freq_limit)
             for i, word_list in enumerate(self.word_frequencies):
                 word_frequency = word_list[1]
-
-                if word_frequency <= self.word_freq_limit:
+                #print(type(word_frequency))
+                if int(word_frequency) <= self.word_freq_limit:
                     final_arg = i
                     break  # here the assumption is that the self.word_frequencies is always in the descending order
         else:
@@ -130,8 +133,8 @@ class DataPreprocessor(object):
             from keras.applications import VGG16
             self.IMG_FEATS = 4096
             base_model = VGG16(weights='imagenet')
-            model = Model(input=base_model.input,
-                          output=base_model.get_layer('fc2').output)
+            model = Model(inputs=base_model.input,
+                          outputs=base_model.get_layer('fc2').output)
             self.extracted_features = []
             number_of_images = len(self.image_files)
             for arg, image_path in enumerate(self.image_files):
@@ -166,7 +169,7 @@ class DataPreprocessor(object):
 
         for arg, image_path in enumerate(self.image_files):
             caption = ' '.join(self.captions[arg])
-            data_file.write('{0}*{1}'.format(image_path, caption))
+            data_file.write('{0}*{1}\n'.format(image_path, caption))
         data_file.close()
 
     def write_dictionaries(self):
@@ -194,9 +197,9 @@ class DataPreprocessor(object):
         log_file.write('elasped_time: {0}\n'.format(self.elapsed_time))
         log_file.close()
 
-    def preprocess(self, filename):
+    def preprocess(self):
         start_time = time.monotonic()
-        self.load(filename=filename)
+        self.load(filename=self.filename)
         self.remove_long_captions()
         self.get_word_frequencies()
         self.remove_infrequent_words()

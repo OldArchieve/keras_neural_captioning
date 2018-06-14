@@ -2,6 +2,7 @@ import numpy as np
 import pickle
 import h5py
 import pandas as pd
+import os
 
 class Generator(object):
 
@@ -10,26 +11,27 @@ class Generator(object):
         self.data_path = data_path
 
         if training_filename == None:
-            self.training_filename = self.data_path + 'training.txt'
+            self.training_filename = os.path.join(self.data_path,'training.txt')
         else:
-            self.training_filename = training_filename
+            self.training_filename = os.path.join(data_path,training_filename)
 
         if validation_filename == None:
-            self.validation_filename = self.data_path + 'validation.txt'
+            self.validation_filename = os.path.join(self.data_path,'validation.txt')
         else:
-            self.validation_filename = validation_filename
+            self.validation_filename = os.path.join(self.data_path,validation_filename)
 
         if image_features_name == None:
-            self.image_features_filename = self.data_path + 'VGG16_image_to_features.h5'
+            self.image_features_filename = os.path.join(self.data_path,'VGG16_image_to_features.h5')
         else:
-            self.image_features_filename = image_features_name
+            self.image_features_filename = os.path.join(self.data_path,image_features_name)
 
         self.dictionary = None
         self.training_dataset = None
         self.validation_dataset = None
         self.image_to_features = None
 
-        self.logs = np.genfromtxt(self.data_path + 'data_parameters.log',delimiter=' ', dtype='str')
+        print(self.data_path)
+        self.logs = np.genfromtxt(os.path.join(self.data_path, 'data_parameters.txt'),delimiter=' ', dtype='str')
 
         self.logs = dict(zip(self.logs[:,0],self.logs[:,1]))
 
@@ -60,8 +62,8 @@ class Generator(object):
 
     def load_vocabulary(self):
         print("Loading vocabulary... ")
-        wordtoix = pickle.load(open(self.data_path + 'word_to_ix.p','rb'))
-        ixtoword = pickle.load(open(self.data_path+'ix_to_word.p','rb'))
+        wordtoix = pickle.load(open(os.path.join(self.data_path, 'word_to_ix.p'),'rb'))
+        ixtoword = pickle.load(open(os.path.join(self.data_path,'ix_to_word.p'),'rb'))
         self.VOCAB_SIZE = len(wordtoix)
         self.wordtoix = wordtoix
         self.ixtoword = ixtoword
@@ -120,7 +122,7 @@ class Generator(object):
 
                 if counter == self.BATCH_SIZE -1:
                     yield_dictionary = self.wrap_in_dictionary(captions_batch,images_batch,targets_batch)
-                    yield  yield_dictionary
+                    yield yield_dictionary
 
                     captions_batch, images_batch, targets_batch = self.make_empty_batch()
                 counter = counter + 1
